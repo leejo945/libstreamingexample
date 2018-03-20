@@ -1,0 +1,638 @@
+/*
+ * Copyright (C) 2011-2015 GUIGUI Simon, fyhertz@gmail.com
+ *
+ * This file is part of libstreaming (https://github.com/fyhertz/libstreaming)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package net.majorkernelpanic.streaming.rtp;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.net.DatagramPacket;
+import java.net.InetAddress;
+import java.net.MulticastSocket;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
+import java.util.Random;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
+
+import org.apache.http.message.BufferedHeader;
+
+ 
+ 
+import net.majorkernelpanic.example1.SLog;
+import net.majorkernelpanic.example1.Util;
+import net.majorkernelpanic.streaming.rtcp.SenderReport;
+import net.majorkernelpanic.streaming.rtsp.RtspServer;
+
+import android.content.SharedPreferences;
+import android.os.SystemClock;
+import android.util.Log;
+
+/**
+ * A basic implementation of an RTP socket.
+ * It implements a buffering mechanism, relying on a FIFO of buffers and a Thread.
+ * That way, if a packetizer tries to send many packets too quickly, the FIFO will
+ * grow and packets will be sent one by one smoothly.
+ */
+public class RtpSocket implements Runnable {
+
+	public static final String tag = "RtpSocket" +RtspServer.tag  ;
+
+	/** Use this to use UDP for the transport protocol. */
+	public final static int TRANSPORT_UDP = 0x00;
+	
+	/** Use this to use TCP for the transport protocol. */
+	public final static int TRANSPORT_TCP = 0x01;	
+	
+	public static final int RTP_HEADER_LENGTH = 12;
+	public static final int MTU = 1300;
+
+	private MulticastSocket mSocket;
+	private DatagramPacket[] mPackets;
+	private byte[][] mBuffers;
+	private long[] mTimestamps;
+
+	private SenderReport mReport;
+	
+	private Semaphore mBufferRequested, mBufferCommitted;
+	private Thread mThread;
+
+	private int mTransport;
+	private long mCacheSize;
+	private long mClock = 0;
+	private long mOldTimestamp = 0;
+	private int mSsrc, mSeq = 0, mPort = -1;
+	private int mBufferCount, mBufferIn, mBufferOut;
+	private int mCount = 0;
+	private byte mTcpHeader[];
+	protected OutputStream mOutputStream = null;
+	
+	private AverageBitrate mAverageBitrate;
+
+	/**
+	 * This RTP socket implements a buffering mechanism relying on a FIFO of buffers and a Thread.
+	 * @throws IOException
+	 */
+	public static StringBuffer stringBuffer = new StringBuffer();
+	public RtpSocket() {
+		gegngzo("RtpSocket");
+		mCacheSize = 0;
+		mBufferCount = 300; // TODO: readjust that when the FIFO is full 
+		mBuffers = new byte[mBufferCount][];
+		mPackets = new DatagramPacket[mBufferCount];
+//		if(mPackets!=null) 
+//			SLog.d("ArraysmPackets","1     "+Arrays.toString(mPackets[0].getData()));
+		 
+		mReport = new SenderReport();
+		mAverageBitrate = new AverageBitrate();
+		mTransport = TRANSPORT_UDP;
+		mTcpHeader = new byte[] {'$',0,0,0};
+		
+		resetFifo();
+
+		for (int i=0; i<mBufferCount; i++) {
+
+			mBuffers[i] = new byte[MTU];
+			mPackets[i] = new DatagramPacket(mBuffers[i], 1);
+			
+
+			/*							     Version(2)  Padding(0)					 					*/
+			/*									 ^		  ^			Extension(0)						*/
+			/*									 |		  |				^								*/
+			/*									 | --------				|								*/
+			/*									 | |---------------------								*/
+			/*									 | ||  -----------------------> Source Identifier(0)	*/
+			/*									 | ||  |												*/
+			//这里所有行的第1,2 列数据添加
+			mBuffers[i][0] = (byte) Integer.parseInt("10000000",2);
+
+			/* Payload Type */
+			mBuffers[i][1] = (byte) 96;
+
+			/* Byte 2,3        ->  Sequence Number                   */
+			/* Byte 4,5,6,7    ->  Timestamp                         */
+			/* Byte 8,9,10,11  ->  Sync Source Identifier            */
+
+		}
+
+	
+		
+		
+		
+		print("data1",0);
+		
+		
+		try {
+		mSocket = new MulticastSocket();
+		} catch (Exception e) {
+			throw new RuntimeException(e.getMessage());
+		}
+		
+	}
+ 
+	public static StringBuffer sb = new StringBuffer();
+	private void printPack(String tag){
+//		if(mPackets==null  ){
+//			return ;
+//		}
+// 		for(int i=0;i<mPackets.length;i++){
+ 			
+ 			
+//  			DatagramPacket pack = mPackets[1];
+////  			Log.d("DatagramPacketaaaaaaaa", "pack :" +pack);
+//  			if(pack!=null){
+//  			//  Log.d("DatagramPacket"+tag, pack.getData()[50] +);
+//  				Log.e("DatagramPacket"+tag,Arrays.toString(pack.getData()) +"\n");
+  				//sb.append("DatagramPacket"+tag +"========"+ Arrays.toString(pack.getData()) +"\n");
+  				//  Log.d("DatagramPacket"+tag, Arrays.toString(pack.getData()));
+ // 			}
+//			 
+//			    try {
+//					File file = new File("/mnt/sdcard/cc.txt");  
+//					StringBuffer sb = null;
+//					if(file!=null&&file.exists()){
+//						BufferedReader br = new BufferedReader(new InputStreamReader(new  FileInputStream(file)));
+//					    String str  =null;
+//					      sb = new StringBuffer();
+//					    while((str = br.readLine())!=null){
+//					    	sb.append(str+"\n");
+//					    }
+//					}
+//					
+//					
+//					PrintStream  ps = new PrintStream(new FileOutputStream(file));
+//					if(sb!=null){
+//						ps.println(sb.toString());
+//					}
+//					ps.println(tag +"======"+ Arrays.toString(pack.getData()));// ���ļ���д���ַ���  
+//					 
+//				} catch (Exception e) {
+//					// TODO Auto-generated catch block
+//					e.printStackTrace();
+//				}
+//		 
+			
+			
+			
+//			
+//		}else{
+//		//	Log.e("DatagramPacket"+tag," nulll  ");
+//		}
+	}
+ 
+    public static void gegngzo(String name){
+    	  Log.d(tag, "gengzong  "+name);
+    	  
+    	  
+    	  
+    }
+	private void resetFifo() {
+		gegngzo("resetFifo");
+		mCount = 0;
+		mBufferIn = 0;
+		mBufferOut = 0;
+		mTimestamps = new long[mBufferCount];
+		mBufferRequested = new Semaphore(mBufferCount);
+		
+		mBufferCommitted = new Semaphore(0);
+		mReport.reset();
+		mAverageBitrate.reset();
+		
+		if(SLog.IS_ENABLE2){
+			
+			SLog.d(tag, "simpletest  mBufferCommitted = new Semaphore(0);  ");
+		}
+	}
+	
+	/** Closes the underlying socket. */
+	public void close() { gegngzo("close");
+		mSocket.close();
+	}
+
+	/** Sets the SSRC of the stream. */
+	//设置8-11 的位置
+	public void setSSRC(int ssrc) {  gegngzo("setSSRC");
+		this.mSsrc = ssrc;
+		 
+		for (int i=0;i<mBufferCount;i++) {
+			setLong(mBuffers[i], ssrc,8,12);
+		}
+	
+		
+	//	print("new1",0);
+		
+		mReport.setSSRC(mSsrc);
+	}
+
+	/** Returns the SSRC of the stream. */
+	public int getSSRC() {   gegngzo("getSSRC");
+		return mSsrc;
+	}
+
+	/** Sets the clock frequency of the stream in Hz. */
+	public void setClockFrequency(long clock) {    gegngzo("clock");
+		mClock = clock;
+	}
+
+	/** Sets the size of the FIFO in ms. */
+	public void setCacheSize(long cacheSize) {    gegngzo("setCacheSize");
+		mCacheSize = cacheSize;
+	}
+	
+	/** Sets the Time To Live of the UDP packets. */
+	public void setTimeToLive(int ttl) throws IOException {   gegngzo("setTimeToLive");
+		mSocket.setTimeToLive(ttl);
+	}
+
+	/** Sets the destination address and to which the packets will be sent. */
+	public void setDestination(InetAddress dest, int dport, int rtcpPort) {gegngzo("setDestination");
+		if (dport != 0 && rtcpPort != 0) {
+			mTransport = TRANSPORT_UDP;
+			mPort = dport;
+			for (int i=0;i<mBufferCount;i++) {
+				mPackets[i].setPort(dport);
+				mPackets[i].setAddress(dest);
+			}
+			print("data2",0);
+			
+			mReport.setDestination(dest, rtcpPort);
+		}
+	}
+	
+	/**
+	 * If a TCP is used as the transport protocol for the RTP session,
+	 * the output stream to which RTP packets will be written to must
+	 * be specified with this method.
+	 */ 
+	public void setOutputStream(OutputStream outputStream, byte channelIdentifier) {
+		gegngzo("setOutputStream");
+		if (outputStream != null) {
+			mTransport = TRANSPORT_TCP;
+			mOutputStream = outputStream;
+			mTcpHeader[1] = channelIdentifier;
+			mReport.setOutputStream(outputStream, (byte) (channelIdentifier+1));
+		}
+	}
+
+	public int getPort() { gegngzo("getPort");
+		return mPort;
+	}
+
+	public int[] getLocalPorts() {  gegngzo("getLocalPorts");
+		return new int[] {
+			mSocket.getLocalPort(),
+			mReport.getLocalPort()
+		};
+		
+	}
+	
+	/** 
+	 * Returns an available buffer from the FIFO, it can then be modified. 
+	 * Call {@link #commitBuffer(int)} to send it over the network. 
+	 * @throws InterruptedException 
+	 **/
+	public byte[] requestBuffer() throws InterruptedException {
+		 gegngzo("requestBuffer");
+		
+		mBufferRequested.acquire();
+		//这里buff 无数据变化
+		mBuffers[mBufferIn][1] &= 0x7F;
+		
+		print("new2",0);
+		return mBuffers[mBufferIn];
+	}
+
+	/** Puts the buffer back into the FIFO without sending the packet. */
+	public void commitBuffer() throws IOException {
+		 gegngzo("commitBuffer1");
+		if (mThread == null) {
+			mThread = new Thread(this);
+			mThread.start();
+		}
+		
+		if (++mBufferIn>=mBufferCount) mBufferIn = 0;
+		if(SLog.IS_ENABLE2) 
+			SLog.d(tag, "mBufferCommitted.release() 1");
+		 
+		mBufferCommitted.release();
+
+	}	
+	int i  =0;
+	/** Sends the RTP packet over the network. */
+	public void commitBuffer(int length) throws IOException {
+		 gegngzo("commitBuffer2");
+		
+		if(SLog.IS_ENABLE2){
+ 	 	  SLog.d(tag, "commitBuffer22222  ");
+		}
+		
+	
+	    int ran = new Random().nextInt(10000);	
+		print("data8 ==="+ran,mBufferIn);
+		updateSequence();
+		mPackets[mBufferIn].setLength(length);
+
+		print("data3==="+ran,mBufferIn);
+		mAverageBitrate.push(length);
+
+		if (++mBufferIn>=mBufferCount) mBufferIn = 0;
+		if(SLog.IS_ENABLE2  || isTes) 
+		SLog.d(tag, "simpletest  mBufferCommittedtryAcquirerelease() 2");
+		mBufferCommitted.release();
+
+		if (mThread == null) {
+			mThread = new Thread(this);
+			mThread.start();
+		}		
+		
+	}
+	private boolean isTes = false;
+
+	/** Returns an approximation of the bitrate of the RTP stream in bits per second. */
+	public long getBitrate() {  gegngzo("getBitrate");
+		return mAverageBitrate.average();
+	}
+
+	/** Increments the sequence number. */
+	//设置2-3 位置
+	private void updateSequence() {   gegngzo("updateSequence");
+		setLong(mBuffers[mBufferIn], ++mSeq, 2, 4);
+		print("new3",0);
+	}
+
+	/** 
+	 * Overwrites the timestamp in the packet.
+	 * @param timestamp The new timestamp in ns.
+	 **/
+	//设置4-7 位置
+	public void updateTimestamp(long timestamp) {  gegngzo("updateTimestamp");
+		mTimestamps[mBufferIn] = timestamp;
+		setLong(mBuffers[mBufferIn], (timestamp/100L)*(mClock/1000L)/10000L, 4, 8);
+		print("new4",0);
+	}
+
+	/** Sets the marker in the RTP packet. */
+	public void markNextPacket() {  gegngzo("markNextPacket");
+		mBuffers[mBufferIn][1] |= 0x80;
+		print("new5",0);
+	}
+
+	/** The Thread sends the packets in the FIFO one by one at a constant rate. */
+	DatagramPacket packettemp = null;
+	public static int x = 0;
+	@Override
+	public void run() {    gegngzo("run");
+		Statistics stats = new Statistics(50,3000);
+		boolean flag = false;
+		try {
+			// Caches mCacheSize milliseconds of the stream in the FIFO.
+//			Thread.sleep(mCacheSize);
+//			long delta = 0;
+			if(SLog.IS_ENABLE2){
+	 			  SLog.d(tag+RtspServer.tag," simpletest  before  ");
+			}
+			while (flag=mBufferCommitted.tryAcquire(4,TimeUnit.SECONDS)) {
+				if (mOldTimestamp != 0) {
+					// We use our knowledge of the clock rate of the stream and the difference between two timestamps to
+					// compute the time lapse that the packet represents.
+					if ((mTimestamps[mBufferOut]-mOldTimestamp)>0) {
+						stats.push(mTimestamps[mBufferOut]-mOldTimestamp);
+						long d = stats.average()/1000000;
+						//Log.d(TAG,"delay: "+d+" d: "+(mTimestamps[mBufferOut]-mOldTimestamp)/1000000);
+						// We ensure that packets are sent at a constant and suitable rate no matter how the RtpSocket is used.
+						//if (mCacheSize>0) Thread.sleep(d);
+					} else if ((mTimestamps[mBufferOut]-mOldTimestamp)<0) {
+					//	SLog.e(tag, "TS: "+mTimestamps[mBufferOut]+" OLD: "+mOldTimestamp);
+					}
+					
+//					delta += mTimestamps[mBufferOut]-mOldTimestamp;
+//					if (delta>500000000 || delta<0) {
+//						//Log.d(TAG,"permits: "+mBufferCommitted.availablePermits());
+//						delta = 0;
+//					}
+				}
+				//printPack("beforeupdate");
+				print("data6",mBufferOut);
+				mReport.update(mPackets[mBufferOut].getLength(), (mTimestamps[mBufferOut]/100L)*(mClock/1000L)/10000L);
+			
+				
+				print("data4",mBufferOut);
+				mOldTimestamp = mTimestamps[mBufferOut];
+				 
+				 
+				
+				if (mCount++>0) {
+					if (mTransport == TRANSPORT_UDP) {
+						print("data7",mBufferOut);
+						DatagramPacket packet = mPackets[mBufferOut];
+						print("data5",mBufferOut);
+ 
+						//用于真正发送流数据的时候使用
+						mSocket.send(packet);
+						byte[] m = packet.getData();
+						Log.d("", "********nextIgereaddatatOutputBuffersntnextInt  i   "+Arrays.toString(m));
+  
+					} else {
+						//用于握手的时候使用
+						sendTCP();
+					}
+				}
+				if (++mBufferOut>=mBufferCount) mBufferOut = 0;
+				mBufferRequested.release();
+				
+				
+				if(SLog.IS_ENABLE2){
+	 			  SLog.d(tag+RtspServer.tag," simpletest    mBufferRequested.release();   " +mCount);	
+				}
+				
+				if(SLog.IS_ENABLE2 || isTes){
+		 			  SLog.d(tag," simpletest   mBufferCommittedtryAcquirerelease   mBufferCommitted.release()333 " );	
+				}
+				//mBufferCommitted.release();
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		mThread = null;
+		
+		if(SLog.IS_ENABLE2){
+			 SLog.d(tag+RtspServer.tag," simpletest    resetFifo" +mCount    +"   flag :" +flag);	
+		}	
+		
+		resetFifo();
+	}
+
+	
+	
+	private  void print(final String tag,int mBufferOut) {
+	//	SLog.d(tag,"1=====tag=====" +tag+Arrays.toString(mBuffers[0])+"\n"); 
+		
+	 
+//					if(mPackets!=null&&mPackets.length>0){
+//					 
+//							stringBuffer.append("======"+tag+"======"+Arrays.toString(mPackets[mBufferOut].getData())+"\n");
+//						 
+//					}
+	}
+
+
+	private void sendTCP() {  gegngzo("sendTCP");
+		synchronized (mOutputStream) {
+			int len = mPackets[mBufferOut].getLength();
+//			SLog.d(tag,"sent "+len);
+			mTcpHeader[2] = (byte) (len>>8);
+			mTcpHeader[3] = (byte) (len&0xFF);
+			try {
+				mOutputStream.write(mTcpHeader);
+				mOutputStream.write(mBuffers[mBufferOut], 0, len);
+			} catch (Exception e) {}
+		}
+	}
+    // 这里设置 buffer[8], buffer[9], buffer[10], buffer[11]
+	//                                               8         12   
+	private void setLong(byte[] buffer, long n, int begin, int end) {
+		 gegngzo("setLong");
+		for (end--; end >= begin; end--) {
+			buffer[end] = (byte) (n % 256);
+			n >>= 8;
+		}
+	}
+
+	/** 
+	 * Computes an average bit rate. 
+	 **/
+	protected static class AverageBitrate {
+
+		private final static long RESOLUTION = 200;
+		
+		private long mOldNow, mNow, mDelta;
+		private long[] mElapsed, mSum;
+		private int mCount, mIndex, mTotal;
+		private int mSize;
+		 
+		public AverageBitrate() { gegngzo("AverageBitrate");
+			mSize = 5000/((int)RESOLUTION);
+			reset();
+		}
+		
+		public AverageBitrate(int delay) { gegngzo("AverageBitrate delay");
+			mSize = delay/((int)RESOLUTION);
+			reset();
+		}
+		
+		public void reset() { gegngzo("reset");
+			mSum = new long[mSize];
+			mElapsed = new long[mSize];
+			mNow = SystemClock.elapsedRealtime();
+			mOldNow = mNow;
+			mCount = 0;
+			mDelta = 0;
+			mTotal = 0;
+			mIndex = 0;
+		}
+		
+		public void push(int length) { gegngzo("push");
+			mNow = SystemClock.elapsedRealtime();
+			if (mCount>0) {
+				mDelta += mNow - mOldNow;
+				mTotal += length;
+				if (mDelta>RESOLUTION) {
+					mSum[mIndex] = mTotal;
+					mTotal = 0;
+					mElapsed[mIndex] = mDelta;
+					mDelta = 0;
+					mIndex++;
+					if (mIndex>=mSize) mIndex = 0;
+				}
+			}
+			mOldNow = mNow;
+			mCount++;
+		}
+		
+		public int average() {  gegngzo("average");
+			long delta = 0, sum = 0;
+			for (int i=0;i<mSize;i++) {
+				sum += mSum[i];
+				delta += mElapsed[i];
+			}
+			//Log.d(TAG, "Time elapsed: "+delta);
+			return (int) (delta>0?8000*sum/delta:0);
+		}
+		
+	}
+	
+	/** Computes the proper rate at which packets are sent. */
+	protected static class Statistics {
+
+		public final static String TAG = "Statistics";
+		
+		private int count=500, c = 0;
+		private float m = 0, q = 0;
+		private long elapsed = 0;
+		private long start = 0;
+		private long duration = 0;
+		private long period = 6000000000L;
+		private boolean initoffset = false;
+		 
+		public Statistics(int count, long period) {
+			
+			RtpSocket.gegngzo("Statistics");
+			this.count = count;
+			this.period = period*1000000L; 
+		}
+		
+		public void push(long value) { 	gegngzo("push");
+			duration += value;
+			elapsed += value;
+			if (elapsed>period) {
+				elapsed = 0;
+				long now = System.nanoTime();
+				if (!initoffset || (now - start < 0)) {
+					start = now;
+					duration = 0;
+					initoffset = true;
+				}
+				value -= (now - start) - duration;
+				//Log.d(TAG, "sum1: "+duration/1000000+" sum2: "+(now-start)/1000000+" drift: "+((now-start)-duration)/1000000+" v: "+value/1000000);
+			}
+			if (c<40) {
+				// We ignore the first 40 measured values because they may not be accurate
+				c++;
+				m = value;
+			} else {
+				m = (m*q+value)/(q+1);
+				if (q<count) q++;
+			}
+		}
+		
+		public long average() {  	gegngzo("average");
+			long l = (long)m-2000000;
+			return l>0 ? l : 0;
+		}
+
+	}
+
+}

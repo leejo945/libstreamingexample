@@ -1,0 +1,164 @@
+/**
+ * Project Name:libstreaming
+ * File Name:ScreenShareManager.java
+ * Package Name:net.majorkernelpanic.streaming
+ * Date:2018-1-22上午10:42:25
+ * Copyright (c) 2018, JiangXi Coagent Company All Rights Reserved.
+ *
+*/
+
+package net.majorkernelpanic.streaming;
+
+import android.content.Context;
+import android.hardware.display.DisplayManager;
+import android.media.MediaCodec;
+import android.media.MediaCodec.BufferInfo;
+import android.media.MediaCodecInfo;
+import android.media.MediaFormat;
+import android.util.Log;
+import android.view.Display;
+import android.view.Surface;
+import android.view.SurfaceView;
+
+import java.io.IOException;
+
+import net.majorkernelpanic.streaming.video.VideoQuality;
+
+/**
+ * Date:     2018-1-22 上午10:42:25 <br>
+ * @author   qinbaoyong
+ * @version  
+ * @since    JDK 1.6
+ * @see 	 
+ */
+public class ScreenShareManager {
+    private static final String MIME_TYPE = "video/avc";
+
+    private static final String TAG = "ScreenShareManager";
+
+    private static final boolean VERBOSE = true;
+
+    private static ScreenShareManager instance;
+
+    private Context mAppCtx;
+
+    private SessionState mSession;
+
+    public static class SessionState {
+        public int framerate = 15;
+
+        public int iframe = 10;
+
+        public VideoQuality quality;
+
+        public BufferInfo bufferInfo;
+
+        public MediaCodec encoder;
+
+        public Surface inputSurface;
+    }
+
+    private ScreenShareManager(Context context) {
+        mAppCtx = context.getApplicationContext();
+    }
+
+    public static void setup(Context context) {
+        if (instance == null) {
+            instance = new ScreenShareManager(context);
+        }
+    }
+
+    public static ScreenShareManager getInstance() {
+        return instance;
+    }
+
+    public MediaCodec createMediaCodec(VideoQuality quality) {
+        try {
+            if (VERBOSE) Log.d(TAG, "createMediaCodec:" + quality);
+            mSession = new SessionState();
+            mSession.quality = quality;
+            prepareEncoder();
+            if (VERBOSE) Log.d(TAG, "createMediaCodec:" + mSession);
+            return mSession.encoder;
+        } catch (Exception e) {
+            e.printStackTrace();
+            releaseEncoder();
+            return null;
+        }
+    }
+
+    private void prepareEncoder() throws IOException {
+        if (VERBOSE) Log.d(TAG, "prepareEncoder:" + mSession);
+
+        mSession.bufferInfo = new MediaCodec.BufferInfo();
+
+        MediaFormat format = MediaFormat.createVideoFormat(MIME_TYPE, mSession.quality.resX, mSession.quality.resY);
+
+        // Set some properties. Failing to specify some of these can cause the MediaCodec
+        // configure() call to throw an unhelpful exception.
+        format.setInteger(MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface);
+        format.setInteger(MediaFormat.KEY_BIT_RATE, mSession.quality.bitrate);
+        format.setInteger(MediaFormat.KEY_FRAME_RATE, mSession.framerate);
+        format.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, mSession.iframe);
+        if (VERBOSE) Log.d(TAG, "prepareEncoder format: " + format);
+
+        // Create a MediaCodec encoder, and configure it with our format. Get a Surface
+        // we can use for input and wrap it with a class that handles the EGL work.
+        //
+        // If you want to have two EGL contexts -- one for display, one for recording --
+        // you will likely want to defer instantiation of CodecInputSurface until after the
+        // "display" EGL context is created, then modify the eglCreateContext call to
+        // take eglGetCurrentContext() as the share_context argument.
+        mSession.encoder = MediaCodec.createEncoderByType(MIME_TYPE);
+        
+        
+       // Log.d(TAG, "mMediaCodecis "  +   mSession.encoder.hashCode()  );
+        
+        
+        mSession.encoder.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE);
+        //mInputSurface = new CodecInputSurface(mEncoder.createInputSurface());
+
+        mSession.inputSurface =   mSession.encoder.createInputSurface();
+        Log.d(TAG, "inputSurface "  +surface);
+       
+        DisplayManager displayManager = (DisplayManager) mAppCtx.getSystemService(Context.DISPLAY_SERVICE);
+     
+         
+        displayManager.createVirtualDisplay(
+                "ScreenRecord",
+                mSession.quality.resX,
+                mSession.quality.resY,
+                1,
+                mSession.inputSurface,
+                DisplayManager.VIRTUAL_DISPLAY_FLAG_PUBLIC);
+
+        mSession.encoder.start();
+        if (VERBOSE) Log.d(TAG, "prepareEncoder codec started");
+    }
+
+    private Surface surface;
+    public void setSurface(Surface surface){
+    	this.surface = surface;
+    }
+    
+    private void releaseEncoder() {
+        if (VERBOSE) Log.d(TAG, "releaseEncoder:" + mSession);
+
+        if (mSession == null) {
+            return;
+        }
+
+        if (mSession.encoder != null) {
+            mSession.encoder.stop();
+            mSession.encoder.release();
+            mSession.encoder = null;
+        }
+
+        if (mSession.inputSurface != null) {
+            mSession.inputSurface.release();
+            mSession.inputSurface = null;
+        }
+
+        mSession = null;
+    }
+}
