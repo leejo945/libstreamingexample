@@ -1,0 +1,186 @@
+I/RtspServer( 3530): Connection from 192.168.43.38
+E/RtspServer( 3530): WorkerThreadrun
+D/cyrusRtspServer( 3530): simpletest  parseRequest 解析之前
+D/cyrusRtspServer( 3530): before   input.readLine()
+D/cyrusRtspServer( 3530): after    input.readLine() OPTIONS rtsp://192.168.43.63:8086 RTSP/1.0
+D/cyrusCSeq: 2( 3530):
+D/cyrusCSeq: 2( 3530):  input.readLine()  parseRequest>>   line   CSeq: 2
+D/cyrusUser-Agent: LibVLC/2.2.6 (LIVE555 Streaming Media v2016.02.22)( 3530):
+D/cyrusUser-Agent: LibVLC/2.2.6 (LIVE555 Streaming Media v2016.02.22)( 3530):  input.readLine()  parseRequest>>   line   User-Agent: LibVLC/2.2.6 (LIVE555 Streaming Media v2016.02.22)
+D/cyrusRtspServer( 3530): before 1    input.readLine()
+D/cyrusRtspServer( 3530): after 1    input.readLine()
+E/cyrusRtspServer( 3530): OPTIONS rtsp://192.168.43.63:8086 ===========================
+D/cyrusRtspServer( 3530): simpletest  parseRequest 解析之后
+D/cyrusRtspServer( 3530): run  >> OPTIONS
+D/cyrusRtspServer( 3530): response :RTSP/1.0 200 OK
+D/cyrusRtspServer( 3530): Server: MajorKernelPanic RTSP Server
+D/cyrusRtspServer( 3530): Cseq: 2
+D/cyrusRtspServer( 3530): Content-Length: 0
+D/cyrusRtspServer( 3530): Public: DESCRIBE,SETUP,TEARDOWN,PLAY,PAUSE
+D/cyrusRtspServer( 3530):
+D/cyrusRtspServer( 3530): ==================================
+E/RtspServer( 3530): WorkerThreadrun
+D/cyrusRtspServer( 3530): simpletest  parseRequest 解析之前
+D/cyrusRtspServer( 3530): before   input.readLine()
+D/cyrusRtspServer( 3530): after    input.readLine() DESCRIBE rtsp://192.168.43.63:8086 RTSP/1.0
+D/cyrusCSeq: 3( 3530):
+D/cyrusCSeq: 3( 3530):  input.readLine()  parseRequest>>   line   CSeq: 3
+D/cyrusUser-Agent: LibVLC/2.2.6 (LIVE555 Streaming Media v2016.02.22)( 3530):
+D/cyrusUser-Agent: LibVLC/2.2.6 (LIVE555 Streaming Media v2016.02.22)( 3530):  input.readLine()  parseRequest>>   line   User-Agent: LibVLC/2.2.6 (LIVE555 Streaming Media v2016.02.22)
+D/cyrusAccept: application/sdp( 3530):
+D/cyrusAccept: application/sdp( 3530):  input.readLine()  parseRequest>>   line   Accept: application/sdp
+D/cyrusRtspServer( 3530): before 1    input.readLine()
+D/cyrusRtspServer( 3530): after 1    input.readLine()
+E/cyrusRtspServer( 3530): DESCRIBE rtsp://192.168.43.63:8086===============================
+D/cyrusRtspServer( 3530): simpletest  parseRequest 解析之后
+I/H264ScreenStream( 3530): Phone supports the MediaCoded API
+D/cyrusRtpSocketRtspServer( 3530): simpletest  mBufferCommitted = new Semaphore(0);
+D/        ( 3530): =========configure===========
+D/dalvikvm( 3530): GC_CONCURRENT freed 43K, 10% free 2236K/2468K, paused 1ms+2ms, total 17ms
+I/OMXClient( 3530): Using client-side OMX mux.
+I/OMXClient( 3530): Using client-side OMX mux.
+D/dalvikvm( 3530): GC_FOR_ALLOC freed 14K, 10% free 2237K/2472K, paused 10ms, total 10ms
+I/dalvikvm-heap( 3530): Grow heap (frag case) to 2.916MB for 576016-byte allocation
+D/dalvikvm( 3530): GC_FOR_ALLOC freed 0K, 8% free 2800K/3036K, paused 13ms, total 13ms
+D/dalvikvm( 3530): GC_CONCURRENT freed 0K, 8% free 2800K/3036K, paused 2ms+3ms, total 17ms
+D/cyrus   ( 3530): start   mInitialImage
+D/cyrus   ( 3530): end   mInitialImage
+I/OMXClient( 3530): Using client-side OMX mux.
+E/ACodec  ( 3530): [OMX.Freescale.std.video_encoder.avc.hw-based] storeMetaDataInBuffers (output) failed w/ err -2147483648
+I/ACodec  ( 3530): setupVideoEncoder succeeded
+D/dalvikvm( 3530): GC_CONCURRENT freed 1K, 7% free 3366K/3600K, paused 3ms+2ms, total 27ms
+I/OMXClient( 3530): Using client-side OMX mux.
+I/ACodec  ( 3530): Send reorder config(0) to VPU
+D/dalvikvm( 3530): GC_FOR_ALLOC freed 7K, 6% free 3697K/3920K, paused 11ms, total 12ms
+D/dalvikvm( 3530): GC_FOR_ALLOC freed <1K, 5% free 4260K/4484K, paused 10ms, total 11ms
+D/dalvikvm( 3530): GC_FOR_ALLOC freed 565K, 16% free 4260K/5048K, paused 15ms, total 15ms
+D/dalvikvm( 3530): GC_FOR_ALLOC freed <1K, 5% free 4822K/5048K, paused 10ms, total 10ms
+D/dalvikvm( 3530): GC_FOR_ALLOC freed 563K, 13% free 5385K/6176K, paused 10ms, total 12ms
+D/dalvikvm( 3530): GC_FOR_ALLOC freed 563K, 12% free 5947K/6740K, paused 12ms, total 12ms
+D/dalvikvm( 3530): GC_FOR_ALLOC freed 563K, 11% free 6510K/7304K, paused 10ms, total 11ms
+D/dalvikvm( 3530): GC_FOR_ALLOC freed 1125K, 17% free 7072K/8432K, paused 11ms, total 12ms
+D/dalvikvm( 3530): GC_FOR_ALLOC freed 563K, 9% free 8197K/8996K, paused 14ms, total 15ms
+D/dalvikvm( 3530): GC_FOR_ALLOC freed 1125K, 13% free 9322K/10688K, paused 11ms, total 12ms
+D/dalvikvm( 3530): GC_FOR_ALLOC freed 1125K, 12% free 10447K/11816K, paused 13ms, total 13ms
+D/dalvikvm( 3530): GC_FOR_ALLOC freed 1690K, 15% free 11573K/13508K, paused 14ms, total 14ms
+D/dalvikvm( 3530): GC_FOR_ALLOC freed 1689K, 13% free 13260K/15200K, paused 15ms, total 15ms
+D/dalvikvm( 3530): GC_FOR_ALLOC freed 1688K, 12% free 15510K/17456K, paused 14ms, total 14ms
+D/dalvikvm( 3530): GC_FOR_ALLOC freed 2251K, 13% free 17760K/20276K, paused 20ms, total 20ms
+D/dalvikvm( 3530): GC_FOR_ALLOC freed 2816K, 14% free 20010K/23096K, paused 15ms, total 15ms
+[  678.506684] sgtl5000_pcm_hw_params()
+[  678.524891] sgtl5000_digital_mute() .mute=0
+D/cyrusRtspServer( 3530): run  >> DESCRIBE
+D/cyrusRtspServer( 3530): response :RTSP/1.0 200 OK
+D/cyrusRtspServer( 3530): Server: MajorKernelPanic RTSP Server
+D/cyrusRtspServer( 3530): Cseq: 3
+D/cyrusRtspServer( 3530): Content-Length: 266
+D/cyrusRtspServer( 3530): Content-Base: 192.168.43.63:8086/
+D/cyrusRtspServer( 3530): Content-Type: application/sdp
+D/cyrusRtspServer( 3530):
+D/cyrusRtspServer( 3530): v=0
+D/cyrusRtspServer( 3530): o=- 0 0 IN IP4 192.168.43.63
+D/cyrusRtspServer( 3530): s=Unnamed
+D/cyrusRtspServer( 3530): i=N/A
+D/cyrusRtspServer( 3530): c=IN IP4 192.168.43.38
+D/cyrusRtspServer( 3530): t=0 0
+D/cyrusRtspServer( 3530): a=recvonly
+D/cyrusRtspServer( 3530): m=video 5006 RTP/AVP 96
+D/cyrusRtspServer( 3530): a=rtpmap:96 H264/90000
+D/cyrusRtspServer( 3530): a=fmtp:96 packetization-mode=1;profile-level-id=42401e;sprop-parameter-sets=Z0JAHqaAyD2Q,aM44gA==;
+D/cyrusRtspServer( 3530): a=control:trackID=1
+D/cyrusRtspServer( 3530): ==================================
+E/RtspServer( 3530): WorkerThreadrun
+D/cyrusRtspServer( 3530): simpletest  parseRequest 解析之前
+D/cyrusRtspServer( 3530): before   input.readLine()
+D/cyrusRtspServer( 3530): after    input.readLine() SETUP 192.168.43.63:8086/trackID=1 RTSP/1.0
+D/cyrusCSeq: 4( 3530):
+D/cyrusCSeq: 4( 3530):  input.readLine()  parseRequest>>   line   CSeq: 4
+D/cyrusUser-Agent: LibVLC/2.2.6 (LIVE555 Streaming Media v2016.02.22)( 3530):
+D/cyrusUser-Agent: LibVLC/2.2.6 (LIVE555 Streaming Media v2016.02.22)( 3530):  input.readLine()  parseRequest>>   line   User-Agent: LibVLC/2.2.6 (LIVE555 Streaming Media v2016.02.22)
+D/cyrusTransport: RTP/AVP;unicast;client_port=5006-5007( 3530):
+D/cyrusTransport: RTP/AVP;unicast;client_port=5006-5007( 3530):  input.readLine()  parseRequest>>   line   Transport: RTP/AVP;unicast;client_port=5006-5007
+D/cyrusRtspServer( 3530): before 1    input.readLine()
+D/cyrusRtspServer( 3530): after 1    input.readLine()
+E/cyrusRtspServer( 3530): SETUP 192.168.43.63:8086/trackID=1 ===============================
+D/cyrusRtspServer( 3530): simpletest  parseRequest 解析之后
+D/Session ( 3530): session start
+D/H264ScreenStream( 3530): startstart11111
+D/        ( 3530): =========configure===========
+D/cyrus   ( 3530): start   mInitialImage
+D/dalvikvm( 3530): GC_FOR_ALLOC freed 23411K, 90% free 2813K/26480K, paused 15ms, total 15ms
+D/cyrus   ( 3530): end   mInitialImage
+I/OMXClient( 3530): Using client-side OMX mux.
+E/ACodec  ( 3530): [OMX.Freescale.std.video_encoder.avc.hw-based] storeMetaDataInBuffers (output) failed w/ err -2147483648
+I/ACodec  ( 3530): setupVideoEncoder succeeded
+D/dalvikvm( 3530): GC_CONCURRENT freed 1K, 88% free 3375K/26480K, paused 3ms+5ms, total 58ms
+I/OMXClient( 3530): Using client-side OMX mux.
+I/ACodec  ( 3530): Send reorder config(0) to VPU
+D/dalvikvm( 3530): GC_FOR_ALLOC freed 8K, 87% free 3704K/26480K, paused 14ms, total 14ms
+D/dalvikvm( 3530): GC_FOR_ALLOC freed <1K, 84% free 4266K/26480K, paused 16ms, total 16ms
+D/dalvikvm( 3530): GC_CONCURRENT freed 563K, 82% free 4829K/26480K, paused 4ms+4ms, total 32ms
+D/dalvikvm( 3530): WAIT_FOR_CONCURRENT_GC blocked 5ms
+D/dalvikvm( 3530): GC_FOR_ALLOC freed 563K, 80% free 5391K/26480K, paused 15ms, total 15ms
+D/dalvikvm( 3530): GC_FOR_ALLOC freed 563K, 78% free 5954K/26480K, paused 13ms, total 13ms
+D/dalvikvm( 3530): GC_CONCURRENT freed 563K, 74% free 7079K/26480K, paused 6ms+40ms, total 77ms
+D/dalvikvm( 3530): GC_FOR_ALLOC freed 1127K, 72% free 7641K/26480K, paused 20ms, total 20ms
+D/dalvikvm( 3530): GC_CONCURRENT freed 1126K, 67% free 8766K/26480K, paused 6ms+5ms, total 24ms
+D/dalvikvm( 3530): WAIT_FOR_CONCURRENT_GC blocked 13ms
+D/dalvikvm( 3530): GC_FOR_ALLOC freed 1125K, 63% free 9891K/26480K, paused 16ms, total 16ms
+D/dalvikvm( 3530): GC_FOR_ALLOC freed 1688K, 59% free 11016K/26480K, paused 16ms, total 16ms
+D/dalvikvm( 3530): GC_CONCURRENT freed 1125K, 50% free 13266K/26480K, paused 5ms+66ms, total 87ms
+D/dalvikvm( 3530): GC_FOR_ALLOC freed 2253K, 44% free 14954K/26480K, paused 17ms, total 17ms
+D/dalvikvm( 3530): GC_FOR_ALLOC freed 2252K, 36% free 17204K/26480K, paused 17ms, total 17ms
+D/dalvikvm( 3530): GC_FOR_ALLOC freed 2814K, 27% free 19454K/26480K, paused 17ms, total 18ms
+D/dalvikvm( 3530): GC_CONCURRENT freed 2816K, 14% free 22829K/26480K, paused 5ms+2ms, total 27ms
+D/dalvikvm( 3530): WAIT_FOR_CONCURRENT_GC blocked 17ms
+D/H264ScreenStream( 3530): Video encoded using the MediaCodec API with a buffer
+D/ScreenShareManager( 3530): createMediaCodec:800x480 px, 10 fps, 2048 kbps
+D/ScreenShareManager( 3530): prepareEncoder:net.majorkernelpanic.streaming.ScreenShareManager$SessionState@41c95408
+D/ScreenShareManager( 3530): prepareEncoder format: {frame-rate=15, bitrate=2048000, height=480, mime=video/avc, color-format=2130708361, i-frame-interval=10, width=800}
+I/OMXClient( 3530): Using client-side OMX mux.
+E/ACodec  ( 3530): [OMX.Freescale.std.video_encoder.avc.hw-based] storeMetaDataInBuffers (output) failed w/ err -2147483648
+I/ACodec  ( 3530): setupVideoEncoder succeeded
+D/ScreenShareManager( 3530): inputSurface null
+D/ScreenShareManager( 3530): prepareEncoder codec started
+D/ScreenShareManager( 3530): createMediaCodec:net.majorkernelpanic.streaming.ScreenShareManager$SessionState@41c95408
+D/H264ScreenStream( 3530):  mis.hashCode : 1103793464
+D/cyrusRtspServer( 3530): run  >> SETUP
+D/cyrusRtspServer( 3530): response :RTSP/1.0 200 OK
+D/cyrusRtspServer( 3530): Server: MajorKernelPanic RTSP Server
+D/cyrusRtspServer( 3530): Cseq: 4
+D/cyrusRtspServer( 3530): Content-Length: 0
+D/cyrusRtspServer( 3530): Transport: RTP/AVP/UDP;unicast;destination=192.168.43.38;client_port=5006-5007;server_port=41301-60853;ssrc=eabab143;mode=play
+D/cyrusRtspServer( 3530): Session: 1185d20035702ca
+D/cyrusRtspServer( 3530): Cache-Control: no-cache
+D/cyrusRtspServer( 3530):
+D/cyrusRtspServer( 3530): ==================================
+E/RtspServer( 3530): WorkerThreadrun
+D/cyrusRtspServer( 3530): simpletest  parseRequest 解析之前
+D/cyrusRtspServer( 3530): before   input.readLine()
+D/cyrusRtspServer( 3530): after    input.readLine() PLAY 192.168.43.63:8086/ RTSP/1.0
+D/cyrusCSeq: 5( 3530):
+D/cyrusCSeq: 5( 3530):  input.readLine()  parseRequest>>   line   CSeq: 5
+D/cyrusUser-Agent: LibVLC/2.2.6 (LIVE555 Streaming Media v2016.02.22)( 3530):
+D/cyrusUser-Agent: LibVLC/2.2.6 (LIVE555 Streaming Media v2016.02.22)( 3530):  input.readLine()  parseRequest>>   line   User-Agent: LibVLC/2.2.6 (LIVE555 Streaming Media v2016.02.22)
+D/cyrusSession: 1185d20035702ca( 3530):
+D/cyrusSession: 1185d20035702ca( 3530):  input.readLine()  parseRequest>>   line   Session: 1185d20035702ca
+D/cyrusRange: npt=0.000-( 3530):
+D/cyrusRange: npt=0.000-( 3530):  input.readLine()  parseRequest>>   line   Range: npt=0.000-
+D/cyrusRtspServer( 3530): before 1    input.readLine()
+D/cyrusRtspServer( 3530): after 1    input.readLine()
+E/cyrusRtspServer( 3530): PLAY 192.168.43.63:8086/ ========================================
+D/cyrusRtspServer( 3530): simpletest  parseRequest 解析之后
+D/cyrusRtspServer( 3530): run  >> PLAY
+D/cyrusRtspServer( 3530): response :RTSP/1.0 200 OK
+D/cyrusRtspServer( 3530): Server: MajorKernelPanic RTSP Server
+D/cyrusRtspServer( 3530): Cseq: 5
+D/cyrusRtspServer( 3530): Content-Length: 0
+D/cyrusRtspServer( 3530): RTP-Info: url=rtsp://192.168.43.63:8086/trackID=1;seq=0
+D/cyrusRtspServer( 3530): Session: 1185d20035702ca
+D/cyrusRtspServer( 3530):
+D/cyrusRtspServer( 3530): ==================================
+E/RtspServer( 3530): WorkerThreadrun
+D/cyrusRtspServer( 3530): simpletest  parseRequest 解析之前
+D/cyrusRtspServer( 3530): before   input.readLine()
+D/cyrusRtpSocketRtspServerRtspServer( 3530):  simpletest  before
+D/cyrus   ( 3530): commitBuffer9
